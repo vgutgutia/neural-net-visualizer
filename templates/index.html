@@ -4,142 +4,203 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Neural Net Visualizer - SPB AI Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --burgundy: #660033; --burgundy-l: #8b0044;
-      --bg: #0d0d0d; --surface: #161616; --border: #262626;
-      --text: #e8e8e8; --muted: #666;
-    }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
-    header {
-      background: var(--surface); border-bottom: 1px solid var(--border);
-      padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;
-    }
-    header h1 { font-size: 1rem; font-weight: 600; }
-    header span { font-size: .8rem; color: var(--muted); }
-    .main { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
-    .controls { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; }
-    label { display: block; font-size: .75rem; font-weight: 500; color: var(--muted); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .06em; }
-    select, input[type=range] { width: 100%; margin-bottom: 1rem; }
-    select { background: #1e1e1e; border: 1px solid var(--border); color: var(--text); padding: .5rem; border-radius: 6px; font-family: inherit; }
-    .range-row { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); margin-top: -.8rem; margin-bottom: .5rem; }
-    input[type=range] { accent-color: var(--burgundy); }
-    .train-btn {
-      display: block; width: 100%; padding: .75rem; background: var(--burgundy);
-      color: #fff; border: none; border-radius: 8px; font-size: .95rem; font-weight: 600;
-      cursor: pointer; font-family: inherit; transition: background .2s;
-    }
-    .train-btn:hover { background: var(--burgundy-l); }
-    .train-btn:disabled { opacity: .5; cursor: not-allowed; }
-    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: 1rem; }
-    .metric { background: #1e1e1e; border: 1px solid var(--border); border-radius: 8px; padding: .75rem; text-align: center; }
-    .metric-val { font-size: 1.4rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--burgundy-l); }
-    .metric-lbl { font-size: .7rem; color: var(--muted); margin-top: .2rem; }
-    .plots { display: flex; flex-direction: column; gap: 1.5rem; }
-    .plot-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
-    .plot-title { font-size: .8rem; font-weight: 600; margin-bottom: .75rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
-    .section-div { border-top: 1px solid var(--border); margin: 1rem 0; }
-  </style>
 </head>
 <body>
-  <header>
-    <h1>Neural Network Visualizer</h1>
-    <span>SPB AI &amp; Data Science Club</span>
-  </header>
-  <div class="main">
-    <aside class="controls">
-      <label>Dataset</label>
-      <select id="dataset">
-        <option value="circles">Circles</option>
-        <option value="moons">Moons</option>
-        <option value="spiral">Spiral</option>
-        <option value="xor">XOR</option>
-      </select>
 
-      <label>Hidden Layers</label>
-      <select id="hidden">
-        <option value="8,8">[8, 8]</option>
-        <option value="16,16">[16, 16]</option>
-        <option value="32,16,8">[32, 16, 8]</option>
-        <option value="64,32,16">[64, 32, 16]</option>
-        <option value="8">[8] - shallow</option>
-      </select>
-
-      <label>Activation</label>
-      <select id="activation">
-        <option value="relu">ReLU</option>
-        <option value="tanh">Tanh</option>
-        <option value="sigmoid">Sigmoid</option>
-      </select>
-
-      <label>Learning Rate: <span id="lrVal">0.01</span></label>
-      <input type="range" id="lr" min="0.001" max="0.1" step="0.001" value="0.01"
-             oninput="document.getElementById('lrVal').textContent=this.value" />
-      <div class="range-row"><span>0.001</span><span>0.1</span></div>
-
-      <label>Epochs: <span id="epochVal">200</span></label>
-      <input type="range" id="epochs" min="50" max="500" step="50" value="200"
-             oninput="document.getElementById('epochVal').textContent=this.value" />
-      <div class="range-row"><span>50</span><span>500</span></div>
-
-      <div class="section-div"></div>
-      <div class="metrics">
-        <div class="metric"><div class="metric-val" id="mLoss">-</div><div class="metric-lbl">Final Loss</div></div>
-        <div class="metric"><div class="metric-val" id="mAcc">-</div><div class="metric-lbl">Accuracy</div></div>
+  <header class="site-header">
+    <div class="header-logo">
+      <div class="logo-mark">NN</div>
+      <div>
+        <div class="header-title">Neural Net Visualizer</div>
+        <div class="header-sub">SPB AI &amp; Data Science Club</div>
       </div>
+    </div>
+    <a href="https://github.com/SPB-AI-Data-Science-Club/neural-net-visualizer" target="_blank" class="header-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+      </svg>
+      GitHub
+    </a>
+  </header>
+
+  <div class="main">
+
+    <aside class="controls">
+
+      <div class="control-group">
+        <div class="control-label">Dataset</div>
+        <select id="dataset">
+          <option value="circles">Circles</option>
+          <option value="moons" selected>Moons</option>
+          <option value="spiral">Spiral</option>
+          <option value="xor">XOR</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">Hidden Layers</div>
+        <select id="hidden">
+          <option value="8,8" selected>[8, 8]</option>
+          <option value="16,16">[16, 16]</option>
+          <option value="32,16,8">[32, 16, 8]</option>
+          <option value="64,32,16">[64, 32, 16]</option>
+          <option value="8">[8] - shallow</option>
+          <option value="64,64,64">[64, 64, 64] - deep</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">Activation Function</div>
+        <select id="activation">
+          <option value="relu" selected>ReLU</option>
+          <option value="tanh">Tanh</option>
+          <option value="sigmoid">Sigmoid</option>
+          <option value="leaky_relu">Leaky ReLU</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">Optimizer</div>
+        <select id="optimizer">
+          <option value="adam" selected>Adam</option>
+          <option value="sgd">SGD</option>
+          <option value="rmsprop">RMSProp</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <div class="range-row">
+            <span>Learning Rate</span>
+            <span class="range-val" id="lrVal">0.010</span>
+          </div>
+        </div>
+        <div class="range-wrap">
+          <input type="range" id="lr" min="0.001" max="0.1" step="0.001" value="0.01"
+                 oninput="document.getElementById('lrVal').textContent=parseFloat(this.value).toFixed(3)" />
+          <div class="range-limits"><span>0.001</span><span>0.1</span></div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <div class="range-row">
+            <span>Epochs</span>
+            <span class="range-val" id="epochVal">300</span>
+          </div>
+        </div>
+        <div class="range-wrap">
+          <input type="range" id="epochs" min="50" max="1000" step="50" value="300"
+                 oninput="document.getElementById('epochVal').textContent=this.value" />
+          <div class="range-limits"><span>50</span><span>1000</span></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-val" id="mLoss">-</div>
+          <div class="metric-lbl">Loss</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" id="mAcc">-</div>
+          <div class="metric-lbl">Accuracy</div>
+        </div>
+      </div>
+
       <button class="train-btn" id="trainBtn" onclick="runTrain()">Train Network</button>
+
     </aside>
 
-    <section class="plots">
+    <div class="plots">
       <div class="plot-box">
-        <div class="plot-title">Training Loss &amp; Accuracy</div>
-        <div id="histPlot" style="height:280px"></div>
+        <div class="plot-title">Training History</div>
+        <div class="plot-inner" id="histPlot"></div>
       </div>
       <div class="plot-box">
         <div class="plot-title">Decision Boundary</div>
-        <div id="boundaryPlot" style="height:340px"></div>
+        <div class="plot-inner" id="boundaryPlot"></div>
       </div>
-    </section>
+    </div>
+
   </div>
 
   <script>
+    const BASE_LAYOUT = {
+      paper_bgcolor: '#141414',
+      plot_bgcolor:  '#141414',
+      font:  { color: '#888', family: 'Inter, sans-serif', size: 11 },
+      xaxis: { gridcolor: '#222', zerolinecolor: '#333' },
+      yaxis: { gridcolor: '#222', zerolinecolor: '#333' },
+      margin: { l: 42, r: 42, t: 12, b: 36 },
+    };
+
+    Plotly.newPlot('histPlot', [], { ...BASE_LAYOUT, legend: { orientation: 'h', y: -0.25 } },
+                   { responsive: true, displayModeBar: false });
+    Plotly.newPlot('boundaryPlot', [], BASE_LAYOUT,
+                   { responsive: true, displayModeBar: false });
+
     async function runTrain() {
       const btn = document.getElementById('trainBtn');
-      btn.disabled = true; btn.textContent = 'Training...';
+      btn.disabled = true;
+      btn.textContent = 'Training...';
+      document.getElementById('mLoss').textContent = '-';
+      document.getElementById('mAcc').textContent  = '-';
 
       const hidden = document.getElementById('hidden').value.split(',').map(Number);
-      const body = {
+      const payload = {
         dataset:    document.getElementById('dataset').value,
         hidden,
         activation: document.getElementById('activation').value,
+        optimizer:  document.getElementById('optimizer').value,
         lr:         parseFloat(document.getElementById('lr').value),
         epochs:     parseInt(document.getElementById('epochs').value),
       };
 
       try {
-        const res  = await fetch('/api/train', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        const res = await fetch('/api/train', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) { const t = await res.text(); throw new Error(t); }
         const data = await res.json();
 
         document.getElementById('mLoss').textContent = data.final_loss;
         document.getElementById('mAcc').textContent  = (data.final_acc * 100).toFixed(1) + '%';
 
         const epochs = data.history.map(h => h.epoch);
-        Plotly.newPlot('histPlot', [
-          { x: epochs, y: data.history.map(h => h.loss), name: 'Loss', line: { color: '#660033' } },
-          { x: epochs, y: data.history.map(h => h.acc),  name: 'Acc',  line: { color: '#4a90d9' }, yaxis: 'y2' },
-        ], {
-          template: 'plotly_dark', paper_bgcolor: '#161616', plot_bgcolor: '#161616',
-          margin: { l:40, r:40, t:10, b:30 },
-          yaxis2: { overlaying: 'y', side: 'right', range: [0, 1] },
-          legend: { orientation: 'h', y: -0.15 },
-        });
 
-        Plotly.newPlot('boundaryPlot', data.boundary.data, data.boundary.layout);
+        Plotly.react('histPlot', [
+          { x: epochs, y: data.history.map(h => h.loss), name: 'Loss',
+            type: 'scatter', mode: 'lines', line: { color: '#8b0044', width: 2.5 } },
+          { x: epochs, y: data.history.map(h => h.acc),  name: 'Accuracy',
+            type: 'scatter', mode: 'lines', line: { color: '#4a90d9', width: 2.5 },
+            yaxis: 'y2' },
+        ], {
+          ...BASE_LAYOUT,
+          yaxis:  { ...BASE_LAYOUT.yaxis, title: { text: 'Loss', font: { color: '#888' } } },
+          yaxis2: { overlaying: 'y', side: 'right', range: [0, 1],
+                    title: { text: 'Accuracy', font: { color: '#4a90d9' } },
+                    gridcolor: 'transparent', color: '#4a90d9' },
+          legend: { orientation: 'h', y: -0.25 },
+        }, { responsive: true, displayModeBar: false });
+
+        Plotly.react('boundaryPlot',
+          data.boundary.data,
+          { ...BASE_LAYOUT, ...data.boundary.layout },
+          { responsive: true, displayModeBar: false });
+
+      } catch (err) {
+        alert('Training error: ' + err.message);
       } finally {
-        btn.disabled = false; btn.textContent = 'Train Network';
+        btn.disabled = false;
+        btn.textContent = 'Train Network';
       }
     }
   </script>

@@ -1,0 +1,208 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --burgundy:   #660033;
+  --burgundy-l: #8b0044;
+  --burgundy-d: #3d001f;
+  --bg:         #0d0d0d;
+  --surface:    #141414;
+  --surface-2:  #1c1c1c;
+  --border:     #242424;
+  --border-l:   #2e2e2e;
+  --text:       #e8e8e8;
+  --muted:      #666;
+  --dim:        #999;
+  --radius:     10px;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header */
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+}
+
+.logo-mark {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: var(--burgundy);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  flex-shrink: 0;
+}
+
+.header-title { font-size: .95rem; font-weight: 600; }
+.header-sub   { font-size: .72rem; color: var(--muted); }
+
+.header-link {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .8rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color .2s;
+}
+.header-link:hover { color: var(--text); }
+
+/* Layout */
+.main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* Controls panel */
+.controls {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.control-group { display: flex; flex-direction: column; gap: .5rem; }
+
+.control-label {
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  padding: .5rem .7rem;
+  font-family: inherit;
+  font-size: .85rem;
+  outline: none;
+  transition: border-color .2s;
+  cursor: pointer;
+  width: 100%;
+}
+select:focus { border-color: var(--burgundy-d); }
+
+.range-wrap { display: flex; flex-direction: column; gap: .3rem; }
+.range-row  { display: flex; justify-content: space-between; align-items: center; }
+.range-val  { font-size: .8rem; font-family: 'JetBrains Mono', monospace; color: var(--burgundy-l); }
+.range-limits { font-size: .68rem; color: var(--muted); display: flex; justify-content: space-between; }
+
+input[type=range] {
+  width: 100%;
+  accent-color: var(--burgundy);
+  cursor: pointer;
+}
+
+.divider { border: none; border-top: 1px solid var(--border); }
+
+/* Metrics */
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .6rem;
+}
+
+.metric {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .75rem;
+  text-align: center;
+}
+.metric-val {
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--burgundy-l);
+}
+.metric-lbl {
+  font-size: .67rem;
+  color: var(--muted);
+  margin-top: .2rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+/* Train button */
+.train-btn {
+  width: 100%;
+  padding: .7rem;
+  background: var(--burgundy);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .2s;
+}
+.train-btn:hover:not(:disabled) { background: var(--burgundy-l); }
+.train-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Plot area */
+.plots {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 0;
+  overflow: hidden;
+  padding: 1.25rem;
+  gap: 1.25rem;
+  background: var(--bg);
+}
+
+.plot-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.plot-title {
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .75rem;
+  flex-shrink: 0;
+}
+
+.plot-inner { flex: 1; min-height: 0; }
