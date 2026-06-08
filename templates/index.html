@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neural Net Visualizer - SPB AI Club</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --burgundy: #660033; --burgundy-l: #8b0044;
+      --bg: #0d0d0d; --surface: #161616; --border: #262626;
+      --text: #e8e8e8; --muted: #666;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+    header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;
+    }
+    header h1 { font-size: 1rem; font-weight: 600; }
+    header span { font-size: .8rem; color: var(--muted); }
+    .main { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
+    .controls { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; }
+    label { display: block; font-size: .75rem; font-weight: 500; color: var(--muted); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .06em; }
+    select, input[type=range] { width: 100%; margin-bottom: 1rem; }
+    select { background: #1e1e1e; border: 1px solid var(--border); color: var(--text); padding: .5rem; border-radius: 6px; font-family: inherit; }
+    .range-row { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); margin-top: -.8rem; margin-bottom: .5rem; }
+    input[type=range] { accent-color: var(--burgundy); }
+    .train-btn {
+      display: block; width: 100%; padding: .75rem; background: var(--burgundy);
+      color: #fff; border: none; border-radius: 8px; font-size: .95rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background .2s;
+    }
+    .train-btn:hover { background: var(--burgundy-l); }
+    .train-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: 1rem; }
+    .metric { background: #1e1e1e; border: 1px solid var(--border); border-radius: 8px; padding: .75rem; text-align: center; }
+    .metric-val { font-size: 1.4rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--burgundy-l); }
+    .metric-lbl { font-size: .7rem; color: var(--muted); margin-top: .2rem; }
+    .plots { display: flex; flex-direction: column; gap: 1.5rem; }
+    .plot-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+    .plot-title { font-size: .8rem; font-weight: 600; margin-bottom: .75rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+    .section-div { border-top: 1px solid var(--border); margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Neural Network Visualizer</h1>
+    <span>SPB AI &amp; Data Science Club</span>
+  </header>
+  <div class="main">
+    <aside class="controls">
+      <label>Dataset</label>
+      <select id="dataset">
+        <option value="circles">Circles</option>
+        <option value="moons">Moons</option>
+        <option value="spiral">Spiral</option>
+        <option value="xor">XOR</option>
+      </select>
+
+      <label>Hidden Layers</label>
+      <select id="hidden">
+        <option value="8,8">[8, 8]</option>
+        <option value="16,16">[16, 16]</option>
+        <option value="32,16,8">[32, 16, 8]</option>
+        <option value="64,32,16">[64, 32, 16]</option>
+        <option value="8">[8] - shallow</option>
+      </select>
+
+      <label>Activation</label>
+      <select id="activation">
+        <option value="relu">ReLU</option>
+        <option value="tanh">Tanh</option>
+        <option value="sigmoid">Sigmoid</option>
+      </select>
+
+      <label>Learning Rate: <span id="lrVal">0.01</span></label>
+      <input type="range" id="lr" min="0.001" max="0.1" step="0.001" value="0.01"
+             oninput="document.getElementById('lrVal').textContent=this.value" />
+      <div class="range-row"><span>0.001</span><span>0.1</span></div>
+
+      <label>Epochs: <span id="epochVal">200</span></label>
+      <input type="range" id="epochs" min="50" max="500" step="50" value="200"
+             oninput="document.getElementById('epochVal').textContent=this.value" />
+      <div class="range-row"><span>50</span><span>500</span></div>
+
+      <div class="section-div"></div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-val" id="mLoss">-</div><div class="metric-lbl">Final Loss</div></div>
+        <div class="metric"><div class="metric-val" id="mAcc">-</div><div class="metric-lbl">Accuracy</div></div>
+      </div>
+      <button class="train-btn" id="trainBtn" onclick="runTrain()">Train Network</button>
+    </aside>
+
+    <section class="plots">
+      <div class="plot-box">
+        <div class="plot-title">Training Loss &amp; Accuracy</div>
+        <div id="histPlot" style="height:280px"></div>
+      </div>
+      <div class="plot-box">
+        <div class="plot-title">Decision Boundary</div>
+        <div id="boundaryPlot" style="height:340px"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    async function runTrain() {
+      const btn = document.getElementById('trainBtn');
+      btn.disabled = true; btn.textContent = 'Training...';
+
+      const hidden = document.getElementById('hidden').value.split(',').map(Number);
+      const body = {
+        dataset:    document.getElementById('dataset').value,
+        hidden,
+        activation: document.getElementById('activation').value,
+        lr:         parseFloat(document.getElementById('lr').value),
+        epochs:     parseInt(document.getElementById('epochs').value),
+      };
+
+      try {
+        const res  = await fetch('/api/train', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        const data = await res.json();
+
+        document.getElementById('mLoss').textContent = data.final_loss;
+        document.getElementById('mAcc').textContent  = (data.final_acc * 100).toFixed(1) + '%';
+
+        const epochs = data.history.map(h => h.epoch);
+        Plotly.newPlot('histPlot', [
+          { x: epochs, y: data.history.map(h => h.loss), name: 'Loss', line: { color: '#660033' } },
+          { x: epochs, y: data.history.map(h => h.acc),  name: 'Acc',  line: { color: '#4a90d9' }, yaxis: 'y2' },
+        ], {
+          template: 'plotly_dark', paper_bgcolor: '#161616', plot_bgcolor: '#161616',
+          margin: { l:40, r:40, t:10, b:30 },
+          yaxis2: { overlaying: 'y', side: 'right', range: [0, 1] },
+          legend: { orientation: 'h', y: -0.15 },
+        });
+
+        Plotly.newPlot('boundaryPlot', data.boundary.data, data.boundary.layout);
+      } finally {
+        btn.disabled = false; btn.textContent = 'Train Network';
+      }
+    }
+  </script>
+</body>
+</html>
