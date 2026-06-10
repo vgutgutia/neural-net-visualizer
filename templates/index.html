@@ -3,100 +3,131 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/static/logo.png" />
   <title>Neural Net Visualizer - SPB AI Club</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=2" />
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style id="gpu-status-css">
+  .gpu-status-pill{display:inline-flex;align-items:center;gap:.45rem;padding:.28rem .7rem;border-radius:999px;border:1px solid #2a2a2a;background:#181818;font-size:.72rem;font-weight:600;letter-spacing:.03em;cursor:default;white-space:nowrap}
+  .gpu-status-pill .gd{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:#444}
+  .gpu-status-pill .gd.ready{background:#4ade80;box-shadow:0 0 5px #4ade8077;animation:gpuGlow 2s ease-in-out infinite}
+  .gpu-status-pill .gd.busy{background:#fbbf24;box-shadow:0 0 5px #fbbf2477;animation:gpuGlow 1s ease-in-out infinite}
+  .gpu-status-pill .gt{color:#555}
+  .gpu-status-pill .gt.ready{color:#4ade80}
+  .gpu-status-pill .gt.busy{color:#fbbf24}
+  @keyframes gpuGlow{0%,100%{opacity:1}50%{opacity:.35}}
+  </style>
 </head>
 <body>
 
   <header class="site-header">
     <div class="header-logo">
-      <div class="logo-mark">NN</div>
-      <div>
-        <div class="header-title">Neural Net Visualizer</div>
-        <div class="header-sub">SPB AI &amp; Data Science Club</div>
-      </div>
+      <img src="/static/logo.png" alt="Neural Net Visualizer" style="width:44px;height:44px;border-radius:8px;object-fit:contain;display:block;" />
+      <div class="header-title">Neural Net Visualizer</div>
     </div>
+    <div style="display:flex;align-items:center;gap:.75rem">
+    <div class="gpu-status-pill" id="gpuPill"><div class="gd" id="gpuDot"></div><span class="gt" id="gpuTxt">GPU...</span></div>
     <a href="https://github.com/SPB-AI-Data-Science-Club/neural-net-visualizer" target="_blank" class="header-link">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
       </svg>
       GitHub
     </a>
+    </div>
   </header>
 
   <div class="main">
 
-    <aside class="controls">
+    <!-- Controls sidebar -->
+    <aside class="controls" id="controls">
 
-      <div class="control-group">
-        <div class="control-label">Dataset</div>
-        <select id="dataset">
-          <option value="circles">Circles</option>
-          <option value="moons" selected>Moons</option>
-          <option value="spiral">Spiral</option>
-          <option value="xor">XOR</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">Hidden Layers</div>
-        <select id="hidden">
-          <option value="8,8" selected>[8, 8]</option>
-          <option value="16,16">[16, 16]</option>
-          <option value="32,16,8">[32, 16, 8]</option>
-          <option value="64,32,16">[64, 32, 16]</option>
-          <option value="8">[8] - shallow</option>
-          <option value="64,64,64">[64, 64, 64] - deep</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">Activation Function</div>
-        <select id="activation">
-          <option value="relu" selected>ReLU</option>
-          <option value="tanh">Tanh</option>
-          <option value="sigmoid">Sigmoid</option>
-          <option value="leaky_relu">Leaky ReLU</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">Optimizer</div>
-        <select id="optimizer">
-          <option value="adam" selected>Adam</option>
-          <option value="sgd">SGD</option>
-          <option value="rmsprop">RMSProp</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">
-          <div class="range-row">
-            <span>Learning Rate</span>
-            <span class="range-val" id="lrVal">0.010</span>
+      <div class="ctrl-section">
+        <div class="ctrl-section-title">Dataset</div>
+        <div class="control-group">
+          <div class="control-label">Type</div>
+          <select id="dataset" onchange="onDatasetChange()">
+            <option value="moons" selected>Two Moons</option>
+            <option value="circles">Circles</option>
+            <option value="spiral">Spiral</option>
+            <option value="xor">XOR</option>
+            <option value="linear">Linear</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <div class="control-label">
+            <div class="range-row">
+              <span>Noise</span>
+              <span class="range-val" id="noiseVal">0.12</span>
+            </div>
+          </div>
+          <div class="range-wrap">
+            <input type="range" id="noise" min="0" max="0.4" step="0.02" value="0.12"
+                   oninput="document.getElementById('noiseVal').textContent=parseFloat(this.value).toFixed(2); onDatasetChange()" />
+            <div class="range-limits"><span>0.00</span><span>0.40</span></div>
           </div>
         </div>
-        <div class="range-wrap">
-          <input type="range" id="lr" min="0.001" max="0.1" step="0.001" value="0.01"
-                 oninput="document.getElementById('lrVal').textContent=parseFloat(this.value).toFixed(3)" />
-          <div class="range-limits"><span>0.001</span><span>0.1</span></div>
+      </div>
+
+      <div class="ctrl-section">
+        <div class="ctrl-section-title">Architecture</div>
+        <div class="arch-fixed-row">
+          <span class="arch-fixed-label">Input</span>
+          <span class="arch-fixed-count">2 features</span>
+        </div>
+        <div id="archBuilder"></div>
+        <button class="add-layer-btn" id="addLayerBtn" onclick="addLayer()">+ Add Layer</button>
+        <div class="arch-fixed-row" style="margin-top:.4rem">
+          <span class="arch-fixed-label">Output</span>
+          <span class="arch-fixed-count">2 classes</span>
         </div>
       </div>
 
-      <div class="control-group">
-        <div class="control-label">
-          <div class="range-row">
-            <span>Epochs</span>
-            <span class="range-val" id="epochVal">300</span>
+      <div class="ctrl-section">
+        <div class="ctrl-section-title">Training</div>
+        <div class="control-group">
+          <div class="control-label">Activation</div>
+          <select id="activation">
+            <option value="relu" selected>ReLU</option>
+            <option value="tanh">Tanh</option>
+            <option value="sigmoid">Sigmoid</option>
+            <option value="leaky_relu">Leaky ReLU</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <div class="control-label">Optimizer</div>
+          <select id="optimizer">
+            <option value="adam" selected>Adam</option>
+            <option value="sgd">SGD</option>
+            <option value="rmsprop">RMSProp</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <div class="control-label">
+            <div class="range-row">
+              <span>Learning Rate</span>
+              <span class="range-val" id="lrVal">0.010</span>
+            </div>
+          </div>
+          <div class="range-wrap">
+            <input type="range" id="lr" min="0.001" max="0.1" step="0.001" value="0.01"
+                   oninput="document.getElementById('lrVal').textContent=parseFloat(this.value).toFixed(3)" />
+            <div class="range-limits"><span>0.001</span><span>0.1</span></div>
           </div>
         </div>
-        <div class="range-wrap">
-          <input type="range" id="epochs" min="50" max="1000" step="50" value="300"
-                 oninput="document.getElementById('epochVal').textContent=this.value" />
-          <div class="range-limits"><span>50</span><span>1000</span></div>
+        <div class="control-group">
+          <div class="control-label">
+            <div class="range-row">
+              <span>Epochs</span>
+              <span class="range-val" id="epochVal">300</span>
+            </div>
+          </div>
+          <div class="range-wrap">
+            <input type="range" id="epochs" min="50" max="1000" step="50" value="300"
+                   oninput="document.getElementById('epochVal').textContent=this.value" />
+            <div class="range-limits"><span>50</span><span>1000</span></div>
+          </div>
         </div>
       </div>
 
@@ -111,98 +142,381 @@
           <div class="metric-val" id="mAcc">-</div>
           <div class="metric-lbl">Accuracy</div>
         </div>
+        <div class="metric">
+          <div class="metric-val" id="mEpoch">-</div>
+          <div class="metric-lbl">Epoch</div>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-track">
+          <div class="progress-bar" id="progressBar" style="width:0%"></div>
+        </div>
       </div>
 
       <button class="train-btn" id="trainBtn" onclick="runTrain()">Train Network</button>
 
     </aside>
 
-    <div class="plots">
-      <div class="plot-box">
-        <div class="plot-title">Training History</div>
-        <div class="plot-inner" id="histPlot"></div>
+    <!-- Right panel -->
+    <div class="right-panel">
+
+      <!-- Network diagram -->
+      <div class="net-diagram-box">
+        <div class="panel-label">Architecture</div>
+        <svg id="netDiagram" class="net-svg" xmlns="http://www.w3.org/2000/svg"></svg>
       </div>
-      <div class="plot-box">
-        <div class="plot-title">Decision Boundary</div>
-        <div class="plot-inner" id="boundaryPlot"></div>
+
+      <!-- Plots -->
+      <div class="plots">
+        <div class="plot-box">
+          <div class="plot-title">Training History</div>
+          <div class="plot-inner" id="histPlot"></div>
+        </div>
+        <div class="plot-box">
+          <div class="plot-title">Decision Boundary</div>
+          <div class="plot-inner" id="boundaryPlot"></div>
+        </div>
       </div>
+
     </div>
 
   </div>
 
   <script>
-    const BASE_LAYOUT = {
-      paper_bgcolor: '#141414',
-      plot_bgcolor:  '#141414',
-      font:  { color: '#888', family: 'Inter, sans-serif', size: 11 },
-      xaxis: { gridcolor: '#222', zerolinecolor: '#333' },
-      yaxis: { gridcolor: '#222', zerolinecolor: '#333' },
-      margin: { l: 42, r: 42, t: 12, b: 36 },
-    };
+  'use strict';
 
-    Plotly.newPlot('histPlot', [], { ...BASE_LAYOUT, legend: { orientation: 'h', y: -0.25 } },
-                   { responsive: true, displayModeBar: false });
-    Plotly.newPlot('boundaryPlot', [], BASE_LAYOUT,
-                   { responsive: true, displayModeBar: false });
+  // ── Architecture state ─────────────────────────────────────────────
+  const arch = { hidden: [8, 8] };
+  const MAX_LAYERS   = 6;
+  const MAX_NEURONS  = 64;
+  const MIN_NEURONS  = 2;
 
-    async function runTrain() {
-      const btn = document.getElementById('trainBtn');
-      btn.disabled = true;
-      btn.textContent = 'Training...';
-      document.getElementById('mLoss').textContent = '-';
-      document.getElementById('mAcc').textContent  = '-';
+  let previewData = null;    // cached scatter points
+  let isTraining  = false;
 
-      const hidden = document.getElementById('hidden').value.split(',').map(Number);
-      const payload = {
-        dataset:    document.getElementById('dataset').value,
-        hidden,
-        activation: document.getElementById('activation').value,
-        optimizer:  document.getElementById('optimizer').value,
-        lr:         parseFloat(document.getElementById('lr').value),
-        epochs:     parseInt(document.getElementById('epochs').value),
-      };
+  // ── Architecture builder ───────────────────────────────────────────
+  function renderArch() {
+    const el = document.getElementById('archBuilder');
+    el.innerHTML = arch.hidden.map((n, i) => `
+      <div class="arch-row" id="arch-row-${i}">
+        <span class="arch-row-label">Layer ${i + 1}</span>
+        <div class="arch-neuron-ctrl">
+          <button class="arch-btn" onclick="adjustNeurons(${i}, -4)" ${n <= MIN_NEURONS ? 'disabled' : ''}>-</button>
+          <span class="arch-count" id="arch-n-${i}">${n}</span>
+          <button class="arch-btn" onclick="adjustNeurons(${i}, 4)" ${n >= MAX_NEURONS ? 'disabled' : ''}>+</button>
+        </div>
+        ${arch.hidden.length > 1 ? `<button class="arch-rm" onclick="removeLayer(${i})" title="Remove layer">&#x2715;</button>` : '<span class="arch-rm-placeholder"></span>'}
+      </div>
+    `).join('');
 
-      try {
-        const res = await fetch('/api/train', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) { const t = await res.text(); throw new Error(t); }
-        const data = await res.json();
+    document.getElementById('addLayerBtn').disabled = arch.hidden.length >= MAX_LAYERS;
+    drawNetwork();
+  }
 
-        document.getElementById('mLoss').textContent = data.final_loss;
-        document.getElementById('mAcc').textContent  = (data.final_acc * 100).toFixed(1) + '%';
+  function adjustNeurons(idx, delta) {
+    arch.hidden[idx] = Math.max(MIN_NEURONS, Math.min(MAX_NEURONS, arch.hidden[idx] + delta));
+    renderArch();
+  }
 
-        const epochs = data.history.map(h => h.epoch);
+  function addLayer() {
+    if (arch.hidden.length >= MAX_LAYERS) return;
+    arch.hidden.push(8);
+    renderArch();
+  }
 
-        Plotly.react('histPlot', [
-          { x: epochs, y: data.history.map(h => h.loss), name: 'Loss',
-            type: 'scatter', mode: 'lines', line: { color: '#8b0044', width: 2.5 } },
-          { x: epochs, y: data.history.map(h => h.acc),  name: 'Accuracy',
-            type: 'scatter', mode: 'lines', line: { color: '#4a90d9', width: 2.5 },
-            yaxis: 'y2' },
-        ], {
-          ...BASE_LAYOUT,
-          yaxis:  { ...BASE_LAYOUT.yaxis, title: { text: 'Loss', font: { color: '#888' } } },
-          yaxis2: { overlaying: 'y', side: 'right', range: [0, 1],
-                    title: { text: 'Accuracy', font: { color: '#4a90d9' } },
-                    gridcolor: 'transparent', color: '#4a90d9' },
-          legend: { orientation: 'h', y: -0.25 },
-        }, { responsive: true, displayModeBar: false });
+  function removeLayer(idx) {
+    if (arch.hidden.length <= 1) return;
+    arch.hidden.splice(idx, 1);
+    renderArch();
+  }
 
-        Plotly.react('boundaryPlot',
-          data.boundary.data,
-          { ...BASE_LAYOUT, ...data.boundary.layout },
-          { responsive: true, displayModeBar: false });
+  // ── SVG network diagram ────────────────────────────────────────────
+  function drawNetwork() {
+    const svg = document.getElementById('netDiagram');
+    svg.innerHTML = '';
+    const W = svg.clientWidth  || 480;
+    const H = svg.clientHeight || 170;
+    const ns = 'http://www.w3.org/2000/svg';
 
-      } catch (err) {
-        alert('Training error: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Train Network';
+    const fullLayers = [2, ...arch.hidden, 2];
+    const nLayers    = fullLayers.length;
+    const maxShow    = 7;
+    const padB       = 22;   // bottom padding for labels
+
+    // X positions
+    const xs = fullLayers.map((_, i) => ((i + 1) / (nLayers + 1)) * W);
+
+    // Y positions per layer (capped display)
+    const ys = fullLayers.map(n => {
+      const show = Math.min(n, maxShow);
+      return Array.from({ length: show }, (_, j) => ((j + 1) / (show + 1)) * (H - padB));
+    });
+
+    // Neuron radius: shrink if many layers or many neurons
+    const maxDisplayed = Math.max(...ys.map(a => a.length));
+    const r = Math.min(9, Math.max(4, Math.floor((H - padB) / (maxDisplayed * 2.8))));
+
+    // Connections
+    for (let l = 0; l < nLayers - 1; l++) {
+      for (const y1 of ys[l]) {
+        for (const y2 of ys[l + 1]) {
+          const line = document.createElementNS(ns, 'line');
+          line.setAttribute('x1', xs[l]);   line.setAttribute('y1', y1);
+          line.setAttribute('x2', xs[l+1]); line.setAttribute('y2', y2);
+          line.setAttribute('stroke', '#1e1e1e');
+          line.setAttribute('stroke-width', '1');
+          svg.appendChild(line);
+        }
       }
     }
+
+    // Neurons + labels
+    for (let l = 0; l < nLayers; l++) {
+      const isIn  = l === 0;
+      const isOut = l === nLayers - 1;
+      const fill   = isIn ? '#0f2340' : isOut ? '#200010' : '#191919';
+      const stroke = isIn ? '#4a90d9' : isOut ? '#8b0044' : '#3a3a3a';
+      const n      = fullLayers[l];
+
+      for (const y of ys[l]) {
+        const c = document.createElementNS(ns, 'circle');
+        c.setAttribute('cx', xs[l]); c.setAttribute('cy', y);
+        c.setAttribute('r', r);
+        c.setAttribute('fill', fill); c.setAttribute('stroke', stroke);
+        c.setAttribute('stroke-width', '1.5');
+        svg.appendChild(c);
+      }
+
+      // Overflow count
+      if (n > maxShow) {
+        const t = document.createElementNS(ns, 'text');
+        const lastY = ys[l][ys[l].length - 1];
+        t.setAttribute('x', xs[l]); t.setAttribute('y', lastY + r + 11);
+        t.setAttribute('text-anchor', 'middle');
+        t.setAttribute('fill', '#555'); t.setAttribute('font-size', '9');
+        t.setAttribute('font-family', 'Inter, sans-serif');
+        t.textContent = '+' + (n - maxShow) + ' more';
+        svg.appendChild(t);
+      }
+
+      // Layer label
+      const lbl = document.createElementNS(ns, 'text');
+      lbl.setAttribute('x', xs[l]); lbl.setAttribute('y', H - 10);
+      lbl.setAttribute('text-anchor', 'middle');
+      lbl.setAttribute('fill', isIn ? '#3a70b0' : isOut ? '#6b0035' : '#444');
+      lbl.setAttribute('font-size', '9');
+      lbl.setAttribute('font-family', 'Inter, sans-serif');
+      lbl.textContent = isIn ? 'Input' : isOut ? 'Output' : 'H' + l;
+      svg.appendChild(lbl);
+
+      // Neuron count
+      const cnt = document.createElementNS(ns, 'text');
+      cnt.setAttribute('x', xs[l]); cnt.setAttribute('y', H - 1);
+      cnt.setAttribute('text-anchor', 'middle');
+      cnt.setAttribute('fill', '#333'); cnt.setAttribute('font-size', '8');
+      cnt.setAttribute('font-family', 'JetBrains Mono, monospace');
+      cnt.textContent = n;
+      svg.appendChild(cnt);
+    }
+  }
+
+  // ── Plotly shared config ───────────────────────────────────────────
+  const PLOT_CFG = { responsive: true, displayModeBar: false };
+  const BASE_LAYOUT = {
+    paper_bgcolor: '#141414',
+    plot_bgcolor:  '#141414',
+    font:   { color: '#888', family: 'Inter, sans-serif', size: 11 },
+    xaxis:  { gridcolor: '#1e1e1e', zerolinecolor: '#2a2a2a' },
+    yaxis:  { gridcolor: '#1e1e1e', zerolinecolor: '#2a2a2a' },
+    margin: { l: 42, r: 42, t: 10, b: 36 },
+  };
+  const HIST_EXTRA = {
+    yaxis:  { ...BASE_LAYOUT.yaxis, title: { text: 'Loss', font: { color: '#888', size: 10 } } },
+    yaxis2: {
+      overlaying: 'y', side: 'right', range: [0, 1],
+      title: { text: 'Accuracy', font: { color: '#4a90d9', size: 10 } },
+      gridcolor: 'transparent', color: '#4a90d9', tickformat: '.0%',
+    },
+    legend: { orientation: 'h', y: -0.28, font: { size: 10 } },
+  };
+  const BOUNDARY_EXTRA = {
+    margin: { l: 10, r: 10, t: 10, b: 10 },
+    xaxis:  { showgrid: false, zeroline: false, showticklabels: false },
+    yaxis:  { showgrid: false, zeroline: false, showticklabels: false },
+    legend: { orientation: 'h', y: -0.12, font: { size: 10 } },
+  };
+
+  // Initialise empty plots
+  Plotly.newPlot('histPlot', [], { ...BASE_LAYOUT, ...HIST_EXTRA }, PLOT_CFG);
+  Plotly.newPlot('boundaryPlot', [], { ...BASE_LAYOUT, ...BOUNDARY_EXTRA }, PLOT_CFG);
+
+  // ── Dataset preview ────────────────────────────────────────────────
+  let previewTimeout = null;
+
+  function onDatasetChange() {
+    clearTimeout(previewTimeout);
+    previewTimeout = setTimeout(fetchPreview, 300);
+  }
+
+  async function fetchPreview() {
+    const payload = {
+      dataset: document.getElementById('dataset').value,
+      noise:   parseFloat(document.getElementById('noise').value),
+    };
+    try {
+      const res  = await fetch('/api/preview', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      previewData = data;
+      renderScatter(data);
+    } catch (e) { /* silent */ }
+  }
+
+  function renderScatter(d) {
+    Plotly.react('boundaryPlot', [
+      { type: 'scatter', mode: 'markers', name: 'Class 0',
+        x: d.x0, y: d.y0, marker: { color: '#8b0044', size: 5, line: { color: '#0d0d0d', width: 0.5 } } },
+      { type: 'scatter', mode: 'markers', name: 'Class 1',
+        x: d.x1, y: d.y1, marker: { color: '#4a90d9', size: 5, line: { color: '#0d0d0d', width: 0.5 } } },
+    ], { ...BASE_LAYOUT, ...BOUNDARY_EXTRA }, PLOT_CFG);
+  }
+
+  function renderBoundary(lin, z, scatter) {
+    const d = scatter || previewData || {};
+    Plotly.react('boundaryPlot', [
+      { type: 'contour', x: lin, y: lin, z: z,
+        colorscale: [[0, '#3d001f'], [0.5, '#1a1a2e'], [1, '#003366']],
+        showscale: false, opacity: 0.65, contours: { coloring: 'fill' } },
+      { type: 'scatter', mode: 'markers', name: 'Class 0',
+        x: d.x0 || [], y: d.y0 || [],
+        marker: { color: '#8b0044', size: 5, line: { color: '#0d0d0d', width: 0.5 } } },
+      { type: 'scatter', mode: 'markers', name: 'Class 1',
+        x: d.x1 || [], y: d.y1 || [],
+        marker: { color: '#4a90d9', size: 5, line: { color: '#0d0d0d', width: 0.5 } } },
+    ], { ...BASE_LAYOUT, ...BOUNDARY_EXTRA }, PLOT_CFG);
+  }
+
+  // ── Training ───────────────────────────────────────────────────────
+  async function runTrain() {
+    if (isTraining) return;
+    isTraining = true;
+
+    const btn    = document.getElementById('trainBtn');
+    const epochs = parseInt(document.getElementById('epochs').value);
+    btn.disabled = true;
+    btn.textContent = 'Training...';
+
+    document.getElementById('mLoss').textContent  = '-';
+    document.getElementById('mAcc').textContent   = '-';
+    document.getElementById('mEpoch').textContent = '-';
+    document.getElementById('progressBar').style.width = '0%';
+
+    const payload = {
+      dataset:    document.getElementById('dataset').value,
+      noise:      parseFloat(document.getElementById('noise').value),
+      hidden:     [...arch.hidden],
+      activation: document.getElementById('activation').value,
+      optimizer:  document.getElementById('optimizer').value,
+      lr:         parseFloat(document.getElementById('lr').value),
+      epochs,
+    };
+
+    const histEpochs = [], histLoss = [], histAcc = [];
+    Plotly.react('histPlot', [], { ...BASE_LAYOUT, ...HIST_EXTRA }, PLOT_CFG);
+
+    try {
+      const resp   = await fetch('/api/train_stream', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const reader  = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer    = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          let ev;
+          try { ev = JSON.parse(line.slice(6)); } catch { continue; }
+
+          if (ev.type === 'preview') {
+            previewData = { x0: ev.x0, y0: ev.y0, x1: ev.x1, y1: ev.y1 };
+            renderScatter(previewData);
+
+          } else if (ev.type === 'update') {
+            document.getElementById('mLoss').textContent  = ev.loss.toFixed(4);
+            document.getElementById('mAcc').textContent   = (ev.acc * 100).toFixed(1) + '%';
+            document.getElementById('mEpoch').textContent = ev.epoch + 1;
+            document.getElementById('progressBar').style.width =
+              (((ev.epoch + 1) / epochs) * 100).toFixed(1) + '%';
+
+            histEpochs.push(ev.epoch + 1);
+            histLoss.push(ev.loss);
+            histAcc.push(ev.acc);
+
+            Plotly.react('histPlot', [
+              { x: histEpochs, y: histLoss, name: 'Loss', type: 'scatter', mode: 'lines',
+                line: { color: '#8b0044', width: 2.5 } },
+              { x: histEpochs, y: histAcc,  name: 'Accuracy', type: 'scatter', mode: 'lines',
+                line: { color: '#4a90d9', width: 2.5 }, yaxis: 'y2' },
+            ], { ...BASE_LAYOUT, ...HIST_EXTRA }, PLOT_CFG);
+
+            if (ev.boundary && ev.lin) {
+              renderBoundary(ev.lin, ev.boundary);
+            }
+
+          } else if (ev.type === 'done') {
+            document.getElementById('progressBar').style.width = '100%';
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Training error:', err);
+    } finally {
+      isTraining = false;
+      btn.disabled = false;
+      btn.textContent = 'Train Network';
+    }
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    renderArch();
+    fetchPreview();
+    // Redraw SVG after layout settles
+    setTimeout(drawNetwork, 100);
+  });
+
+  window.addEventListener('resize', () => { drawNetwork(); });
   </script>
+
+<script id="gpu-status-js">
+(function(){
+  function upd(){
+    fetch('https://spbdatascience.org/api/gpu-status')
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var s=d.status||'offline';
+        var dot=document.getElementById('gpuDot');
+        var txt=document.getElementById('gpuTxt');
+        dot.className='gd '+(s==='ready'||s==='busy'?s:'');
+        txt.className='gt '+(s==='ready'||s==='busy'?s:'');
+        txt.textContent=s==='ready'?'RTX 5080 Ready':s==='busy'?'GPU Busy':'GPU Offline';
+      }).catch(function(){
+        document.getElementById('gpuTxt').textContent='GPU Offline';
+      });
+  }
+  upd();setInterval(upd,20000);
+})();
+</script>
 </body>
 </html>

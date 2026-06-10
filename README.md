@@ -1,36 +1,28 @@
-# Neural Network Visualizer
+# Neural Net Visualizer
 
-Watch a neural network learn in real-time. Configure architecture, dataset, and hyperparameters — then watch the decision boundary form as training progresses.
+Design a neural network in the browser and watch it learn, live.
 
-**Great for:** understanding how depth, learning rate, and activation functions affect learning.
-
-## Quick Start
-
-```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python app.py
-# → http://localhost:5002
-```
+**Live demo:** [neural.spbdatascience.org](https://neural.spbdatascience.org)
 
 ## Features
 
-- Toy datasets: Circles, Moons, Spiral, XOR
-- Configurable hidden layers and activation functions
-- Live loss/accuracy curves (Plotly)
-- Decision boundary visualization
+- Interactive architecture builder: add and remove hidden layers, resize each layer
+- Five synthetic datasets (moons, circles, spiral, XOR, linear) with a noise slider and instant preview
+- Live decision boundary, loss, and accuracy streamed during training over server-sent events
+- Choice of optimizer (Adam, SGD with momentum, RMSprop) and activation (ReLU, tanh, sigmoid, leaky ReLU)
+- SVG diagram of the current architecture, updated as you edit
 
-## Running on necron (RTX 5080)
+## How it works
 
-Training uses CPU by default (fast enough for toy datasets). For GPU:
+Training runs server-side in PyTorch. The `/api/train_stream` endpoint is a generator that yields SSE events from inside the training loop: scalar metrics every few epochs and a softmax decision-boundary grid several times per run. The response sets `X-Accel-Buffering: no` so nginx does not buffer the stream, and the client reads it with `fetch` + `ReadableStream` (POST bodies rule out `EventSource`).
+
+## Stack
+
+Python, PyTorch, Flask, server-sent events, Plotly
+
+## Local development
 
 ```bash
-# In app.py, change device to:
-device = torch.device("cuda")
+pip install flask torch scikit-learn numpy
+python app.py
 ```
-
-Then SSH in via Tailscale and run as usual.
-
-## Tech Stack
-
-Python · Flask · PyTorch · Plotly · scikit-learn
