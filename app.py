@@ -72,6 +72,16 @@ def scatter_payload(X: torch.Tensor, y: torch.Tensor) -> dict:
     }
 
 
+def weight_slices(model: nn.Sequential, max_n: int = 7) -> list:
+    """First max_n x max_n block of each Linear layer's weights, for the live diagram."""
+    out = []
+    for mod in model:
+        if isinstance(mod, nn.Linear):
+            w = mod.weight.detach()[:max_n, :max_n]
+            out.append([[round(float(v), 3) for v in row] for row in w])
+    return out
+
+
 def compute_boundary(model: nn.Module, lin: np.ndarray) -> list:
     """Return 2-D softmax grid (class-1 probability) as nested list."""
     xx, yy = np.meshgrid(lin, lin)
@@ -147,6 +157,7 @@ def train_stream():
                 if send_boundary:
                     event["boundary"] = compute_boundary(model, lin)
                     event["lin"]      = lin.round(4).tolist()
+                    event["weights"]  = weight_slices(model)
 
                 yield f"data: {json.dumps(event)}\n\n"
 
