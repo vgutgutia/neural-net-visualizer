@@ -10,11 +10,11 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=2" />
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   <style id="gpu-status-css">
-  .gpu-status-pill{display:inline-flex;align-items:center;gap:.45rem;padding:.28rem .7rem;border-radius:999px;border:1px solid #2a2a2a;background:#181818;font-size:.72rem;font-weight:600;letter-spacing:.03em;cursor:default;white-space:nowrap}
-  .gpu-status-pill .gd{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:#444}
+  .gpu-status-pill{display:inline-flex;align-items:center;gap:.45rem;padding:.28rem .7rem;border-radius:999px;border:1px solid #22304d;background:#141f36;font-size:.72rem;font-weight:600;letter-spacing:.03em;cursor:default;white-space:nowrap}
+  .gpu-status-pill .gd{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:#38486e}
   .gpu-status-pill .gd.ready{background:#4ade80;box-shadow:0 0 5px #4ade8077;animation:gpuGlow 2s ease-in-out infinite}
   .gpu-status-pill .gd.busy{background:#fbbf24;box-shadow:0 0 5px #fbbf2477;animation:gpuGlow 1s ease-in-out infinite}
-  .gpu-status-pill .gt{color:#555}
+  .gpu-status-pill .gt{color:#4a5c84}
   .gpu-status-pill .gt.ready{color:#4ade80}
   .gpu-status-pill .gt.busy{color:#fbbf24}
   @keyframes gpuGlow{0%,100%{opacity:1}50%{opacity:.35}}
@@ -28,13 +28,13 @@
     .rotate-hint.dismissed{display:none}
     .rotate-hint svg{animation:rotateBob 2.4s ease-in-out infinite}
     @keyframes rotateBob{0%,100%{transform:rotate(0)}50%{transform:rotate(90deg)}}
-    .rotate-hint-title{font-size:1.1rem;font-weight:800;color:#ebebeb}
-    .rotate-hint-sub{font-size:.85rem;color:#999;line-height:1.6;max-width:300px}
-    .rotate-hint-btn{margin-top:.4rem;padding:.6rem 1.4rem;background:#660033;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer}
+    .rotate-hint-title{font-size:1.1rem;font-weight:800;color:#e9eef8}
+    .rotate-hint-sub{font-size:.85rem;color:#94a3c0;line-height:1.6;max-width:300px}
+    .rotate-hint-btn{margin-top:.4rem;padding:.6rem 1.4rem;background:#3f74d4;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer}
   }
   </style>
   <div class="rotate-hint" id="rotateHint">
-    <svg width="44" height="64" viewBox="0 0 24 36" fill="none" stroke="#8b0044" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="2" width="18" height="32" rx="3"/><line x1="9" y1="30" x2="15" y2="30"/></svg>
+    <svg width="44" height="64" viewBox="0 0 24 36" fill="none" stroke="#6494e8" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="2" width="18" height="32" rx="3"/><line x1="9" y1="30" x2="15" y2="30"/></svg>
     <div class="rotate-hint-title">This one works best in landscape</div>
     <div class="rotate-hint-sub">Rotate your phone sideways for the full board, or continue anyway in portrait.</div>
     <button class="rotate-hint-btn" onclick="document.getElementById('rotateHint').classList.add('dismissed')">Continue in portrait</button>
@@ -305,7 +305,7 @@
           const line = document.createElementNS(ns, 'line');
           line.setAttribute('x1', xs[l]);   line.setAttribute('y1', ys[l][i]);
           line.setAttribute('x2', xs[l+1]); line.setAttribute('y2', ys[l+1][j]);
-          line.setAttribute('stroke', '#1e1e1e');
+          line.setAttribute('stroke', '#182440');
           line.setAttribute('stroke-width', '1');
           line.setAttribute('class', 'net-edge');
           line.dataset.l = l; line.dataset.i = i; line.dataset.j = j;
@@ -318,8 +318,8 @@
     for (let l = 0; l < nLayers; l++) {
       const isIn  = l === 0;
       const isOut = l === nLayers - 1;
-      const fill   = isIn ? '#0f2340' : isOut ? '#200010' : '#191919';
-      const stroke = isIn ? '#4a90d9' : isOut ? '#8b0044' : '#3a3a3a';
+      const fill   = isIn ? '#0f2340' : isOut ? '#1d2a52' : '#191919';
+      const stroke = isIn ? '#4a90d9' : isOut ? '#6494e8' : '#38486e';
       const n      = fullLayers[l];
 
       for (const y of ys[l]) {
@@ -337,7 +337,7 @@
         const lastY = ys[l][ys[l].length - 1];
         t.setAttribute('x', xs[l]); t.setAttribute('y', lastY + r + 11);
         t.setAttribute('text-anchor', 'middle');
-        t.setAttribute('fill', '#555'); t.setAttribute('font-size', '9');
+        t.setAttribute('fill', '#4a5c84'); t.setAttribute('font-size', '9');
         t.setAttribute('font-family', 'Inter, sans-serif');
         t.textContent = '+' + (n - maxShow) + ' more';
         svg.appendChild(t);
@@ -347,7 +347,7 @@
       const lbl = document.createElementNS(ns, 'text');
       lbl.setAttribute('x', xs[l]); lbl.setAttribute('y', H - 10);
       lbl.setAttribute('text-anchor', 'middle');
-      lbl.setAttribute('fill', isIn ? '#3a70b0' : isOut ? '#6b0035' : '#444');
+      lbl.setAttribute('fill', isIn ? '#3a70b0' : isOut ? '#8fa8e8' : '#38486e');
       lbl.setAttribute('font-size', '9');
       lbl.setAttribute('font-family', 'Inter, sans-serif');
       lbl.textContent = isIn ? 'Input' : isOut ? 'Output' : 'H' + l;
@@ -357,7 +357,7 @@
       const cnt = document.createElementNS(ns, 'text');
       cnt.setAttribute('x', xs[l]); cnt.setAttribute('y', H - 1);
       cnt.setAttribute('text-anchor', 'middle');
-      cnt.setAttribute('fill', '#333'); cnt.setAttribute('font-size', '8');
+      cnt.setAttribute('fill', '#2c3a5c'); cnt.setAttribute('font-size', '8');
       cnt.setAttribute('font-family', 'JetBrains Mono, monospace');
       cnt.textContent = n;
       svg.appendChild(cnt);
@@ -367,15 +367,15 @@
   // ── Plotly shared config ───────────────────────────────────────────
   const PLOT_CFG = { responsive: true, displayModeBar: false };
   const BASE_LAYOUT = {
-    paper_bgcolor: '#141414',
-    plot_bgcolor:  '#141414',
-    font:   { color: '#888', family: 'Inter, sans-serif', size: 11 },
-    xaxis:  { gridcolor: '#1e1e1e', zerolinecolor: '#2a2a2a' },
-    yaxis:  { gridcolor: '#1e1e1e', zerolinecolor: '#2a2a2a' },
+    paper_bgcolor: '#141f36',
+    plot_bgcolor:  '#141f36',
+    font:   { color: '#8494b0', family: 'Inter, sans-serif', size: 11 },
+    xaxis:  { gridcolor: '#182440', zerolinecolor: '#22304d' },
+    yaxis:  { gridcolor: '#182440', zerolinecolor: '#22304d' },
     margin: { l: 42, r: 42, t: 10, b: 36 },
   };
   const HIST_EXTRA = {
-    yaxis:  { ...BASE_LAYOUT.yaxis, title: { text: 'Loss', font: { color: '#888', size: 10 } } },
+    yaxis:  { ...BASE_LAYOUT.yaxis, title: { text: 'Loss', font: { color: '#8494b0', size: 10 } } },
     yaxis2: {
       overlaying: 'y', side: 'right', range: [0, 1],
       title: { text: 'Accuracy', font: { color: '#4a90d9', size: 10 } },
@@ -421,9 +421,9 @@
   function renderScatter(d) {
     Plotly.react('boundaryPlot', [
       { type: 'scatter', mode: 'markers', name: 'Class 0',
-        x: d.x0, y: d.y0, marker: { color: '#8b0044', size: 5, line: { color: '#0d0d0d', width: 0.5 } } },
+        x: d.x0, y: d.y0, marker: { color: '#6494e8', size: 5, line: { color: '#0c1322', width: 0.5 } } },
       { type: 'scatter', mode: 'markers', name: 'Class 1',
-        x: d.x1, y: d.y1, marker: { color: '#4a90d9', size: 5, line: { color: '#0d0d0d', width: 0.5 } } },
+        x: d.x1, y: d.y1, marker: { color: '#4a90d9', size: 5, line: { color: '#0c1322', width: 0.5 } } },
     ], { ...BASE_LAYOUT, ...BOUNDARY_EXTRA }, PLOT_CFG);
   }
 
@@ -431,14 +431,14 @@
     const d = scatter || previewData || {};
     Plotly.react('boundaryPlot', [
       { type: 'contour', x: lin, y: lin, z: z,
-        colorscale: [[0, '#3d001f'], [0.5, '#1a1a2e'], [1, '#003366']],
+        colorscale: [[0, '#16294e'], [0.5, '#1a1a2e'], [1, '#003366']],
         showscale: false, opacity: 0.65, contours: { coloring: 'fill' } },
       { type: 'scatter', mode: 'markers', name: 'Class 0',
         x: d.x0 || [], y: d.y0 || [],
-        marker: { color: '#8b0044', size: 5, line: { color: '#0d0d0d', width: 0.5 } } },
+        marker: { color: '#6494e8', size: 5, line: { color: '#0c1322', width: 0.5 } } },
       { type: 'scatter', mode: 'markers', name: 'Class 1',
         x: d.x1 || [], y: d.y1 || [],
-        marker: { color: '#4a90d9', size: 5, line: { color: '#0d0d0d', width: 0.5 } } },
+        marker: { color: '#4a90d9', size: 5, line: { color: '#0c1322', width: 0.5 } } },
     ], { ...BASE_LAYOUT, ...BOUNDARY_EXTRA }, PLOT_CFG);
   }
 
@@ -508,7 +508,7 @@
 
             Plotly.react('histPlot', [
               { x: histEpochs, y: histLoss, name: 'Loss', type: 'scatter', mode: 'lines',
-                line: { color: '#8b0044', width: 2.5 } },
+                line: { color: '#6494e8', width: 2.5 } },
               { x: histEpochs, y: histAcc,  name: 'Accuracy', type: 'scatter', mode: 'lines',
                 line: { color: '#4a90d9', width: 2.5 }, yaxis: 'y2' },
             ], { ...BASE_LAYOUT, ...HIST_EXTRA }, PLOT_CFG);

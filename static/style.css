@@ -1,17 +1,17 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --burgundy:   #660033;
-  --burgundy-l: #8b0044;
-  --burgundy-d: #3d001f;
-  --bg:         #0d0d0d;
-  --surface:    #141414;
-  --surface-2:  #1c1c1c;
-  --border:     #242424;
-  --border-l:   #2e2e2e;
-  --text:       #e8e8e8;
-  --muted:      #666;
-  --dim:        #999;
+  --burgundy:   #3f74d4;
+  --burgundy-l: #6494e8;
+  --burgundy-d: #16294e;
+  --bg:         #0c1322;
+  --surface:    #141f36;
+  --surface-2:  #16223c;
+  --border:     #1b2845;
+  --border-l:   #2c3a5c;
+  --text:       #e9eef8;
+  --muted:      #6e7f9d;
+  --dim:        #94a3c0;
   --radius:     10px;
 }
 
@@ -165,7 +165,7 @@ input[type=range] { width: 100%; accent-color: var(--burgundy); cursor: pointer;
   transition: border-color .15s, background .15s;
   flex-shrink: 0;
 }
-.arch-btn:hover:not(:disabled) { border-color: var(--burgundy-d); background: #1a0010; }
+.arch-btn:hover:not(:disabled) { border-color: var(--burgundy-d); background: #101a2e; }
 .arch-btn:disabled { opacity: .35; cursor: not-allowed; }
 
 .arch-count {
